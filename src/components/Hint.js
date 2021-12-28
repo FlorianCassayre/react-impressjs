@@ -2,7 +2,7 @@ import React, {Component} from 'react';
 
 export default class Hint extends Component {
   render() {
-    const {hint, stepsData, activeStep, hintMessage} = this.props;
+    const {hint, stepsData, activeStep, hintMessage, mobileHintMessage} = this.props;
     const ua = navigator.userAgent.toLowerCase();
     const isMobile = (ua.search(/(iphone)|(ipod)|(android)/) === -1);
 
@@ -22,7 +22,7 @@ export default class Hint extends Component {
                 :
                 <div className="mobile-hint">
                   <img src={swipeRight} role="presentation"/>
-                  <span><b>Swipe</b> to navigate</span>
+                  <span>{mobileHintMessage}</span>
                 </div>
           }
         </div>

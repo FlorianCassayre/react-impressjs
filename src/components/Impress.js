@@ -29,7 +29,7 @@ export default class Impress extends Component {
   constructor(props) {
     super(props);
 
-    const {rootData, hint, hintMessage, fallbackMessage, progress} = props;
+    const {rootData, hint, hintMessage, mobileHintMessage, fallbackMessage, progress} = props;
     const rootStyles = {
       position: 'absolute',
       top: '50%',
@@ -64,6 +64,7 @@ export default class Impress extends Component {
       rootData: rootData, // (not recommended)
       hint: hint,
       hintMessage: hintMessage,
+      mobileHintMessage: mobileHintMessage,
       fallbackMessage: fallbackMessage,
       progress: progress,
 
@@ -127,11 +128,12 @@ export default class Impress extends Component {
     }, 250), false);
   }
 
-  componentWillReceiveProps(nextPorps) {
+  componentWillReceiveProps(nextProps) {
     this.setState({
-      fallbackMessage: nextPorps.fallbackMessage,
-      hint: nextPorps.hint,
-      hintMessage: nextPorps.hintMessage,
+      fallbackMessage: nextProps.fallbackMessage,
+      hint: nextProps.hint,
+      hintMessage: nextProps.hintMessage,
+      mobileHintMessage: nextProps.mobileHintMessage,
     });
   }
 
@@ -408,7 +410,7 @@ export default class Impress extends Component {
     const {
             impressSupported,
             rootStyles, cameraStyles, activeStep,
-            hint, hintMessage,
+            hint, hintMessage, mobileHintMessage,
             fallbackMessage,
             progress,
           } = this.state;
@@ -441,7 +443,8 @@ export default class Impress extends Component {
               hint={hint}
               stepsData={_stepsData}
               activeStep={activeStep}
-              hintMessage={hintMessage}/>
+              hintMessage={hintMessage}
+              mobileHintMessage={mobileHintMessage}/>
           <Progress
               progress={progress}
               stepsData={_stepsData}
@@ -469,6 +472,11 @@ Impress.propTypes = {
   hintMessage: PropTypes.oneOfType([PropTypes.object, PropTypes.string]),
 
   /**
+   * Hint displayed on mobile devices
+   */
+  mobileHintMessage: PropTypes.oneOfType([PropTypes.object, PropTypes.string]),
+
+  /**
    * Fallback message is only visible when there is impress-not-supported
    */
   fallbackMessage: PropTypes.oneOfType([PropTypes.object, PropTypes.string]),
@@ -483,6 +491,7 @@ Impress.defaultProps = {
   rootData: {},
   hint: true,
   hintMessage: <p>Use <b>Spacebar</b> or <b>Arrow keys</b> to navigate</p>,
+  mobileHintMessage: <React.Fragment><b>Swipe</b> to navigate</React.Fragment>,
   fallbackMessage: <p>Your browser <b>doesn't support the features
     required</b> by React-impressJS, so you are presented
     with a simplified version of this presentation.</p>,
