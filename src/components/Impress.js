@@ -29,7 +29,7 @@ export default class Impress extends Component {
   constructor(props) {
     super(props);
 
-    const {rootData, hint, hintMessage, mobileHintMessage, fallbackMessage, forwardOnly, progress} = props;
+    const {rootData, hint, hintMessage, mobileHintMessage, fallbackMessage, forwardOnly, synchronizeUrlHash, progress} = props;
     const rootStyles = {
       position: 'absolute',
       top: '50%',
@@ -67,6 +67,7 @@ export default class Impress extends Component {
       mobileHintMessage: mobileHintMessage,
       fallbackMessage: fallbackMessage,
       forwardOnly: forwardOnly,
+      synchronizeUrlHash: synchronizeUrlHash,
       progress: progress,
 
       /** For touch event **/
@@ -81,7 +82,7 @@ export default class Impress extends Component {
   }
 
   componentDidMount() {
-    const {impressSupported} = this.state;
+    const {impressSupported, synchronizeUrlHash} = this.state;
 
     // 2017/2/28 暫時想不到好方法
     if (impressSupported)
@@ -123,10 +124,12 @@ export default class Impress extends Component {
     }, 250), false);
 
     // URL hash change
-    window.addEventListener('hashchange', throttle(() => {
-      if (window.location.hash !== _lastHash)
-        this.goto(getElementFromHash(_stepsData), 500);
-    }, 250), false);
+    if(synchronizeUrlHash) {
+      window.addEventListener('hashchange', throttle(() => {
+        if (window.location.hash !== _lastHash)
+          this.goto(getElementFromHash(_stepsData), 500);
+      }, 250), false);
+    }
   }
 
   componentWillReceiveProps(nextProps) {
@@ -303,7 +306,9 @@ export default class Impress extends Component {
       },
     }));
 
-    window.location.hash = _lastHash = '#/' + step.id;
+    if(this.state.synchronizeUrlHash) {
+      window.location.hash = _lastHash = '#/' + step.id;
+    }
   }
 
   // Navigate to the PREVIOUS Step.
@@ -502,6 +507,11 @@ Impress.propTypes = {
   forwardOnly: PropTypes.bool,
 
   /**
+   * Whether the URL hash should be synchronized with respect to the state
+   */
+  synchronizeUrlHash: PropTypes.bool,
+
+  /**
    * Progress of presentation
    */
   progress: PropTypes.bool,
@@ -516,5 +526,6 @@ Impress.defaultProps = {
     required</b> by React-impressJS, so you are presented
     with a simplified version of this presentation.</p>,
   forwardOnly: false,
+  synchronizeUrlHash: true,
   progress: false,
 };
