@@ -57,7 +57,7 @@ export default class Step extends Component {
     }
 
     if (target !== document.documentElement)
-      if (target.classList.contains('step'))
+      if (target.classList.contains('step') && goto)
         goto(this.state, this.state.duration);
   }
 

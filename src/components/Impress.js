@@ -29,7 +29,7 @@ export default class Impress extends Component {
   constructor(props) {
     super(props);
 
-    const {rootData, hint, hintMessage, mobileHintMessage, fallbackMessage, progress} = props;
+    const {rootData, hint, hintMessage, mobileHintMessage, fallbackMessage, forwardOnly, progress} = props;
     const rootStyles = {
       position: 'absolute',
       top: '50%',
@@ -66,6 +66,7 @@ export default class Impress extends Component {
       hintMessage: hintMessage,
       mobileHintMessage: mobileHintMessage,
       fallbackMessage: fallbackMessage,
+      forwardOnly: forwardOnly,
       progress: progress,
 
       /** For touch event **/
@@ -307,7 +308,10 @@ export default class Impress extends Component {
 
   // Navigate to the PREVIOUS Step.
   prev() {
-    const {activeStep} = this.state;
+    const {activeStep, forwardOnly} = this.state;
+
+    if(forwardOnly)
+      return;
 
     /**
      * 2017.04.10
@@ -336,10 +340,16 @@ export default class Impress extends Component {
 
   // Navigate to the NEXT Step.
   next() {
-    const {activeStep} = this.state;
+    const {activeStep, forwardOnly} = this.state;
     const stepsDataKeys = Object.keys(_stepsData);
     let next = stepsDataKeys.findIndex(k => k === activeStep.id) + 1;
-    next = next < stepsDataKeys.length ? stepsDataKeys[next] : stepsDataKeys[0];
+    if(next < stepsDataKeys.length) {
+      next = stepsDataKeys[next];
+    } else if(!forwardOnly) {
+      next = stepsDataKeys[0];
+    } else {
+      return;
+    }
     next = _stepsData[next];
 
     this.goto(next, next.duration);
@@ -347,6 +357,10 @@ export default class Impress extends Component {
 
   // Navigate to the FIRST Step.
   home() {
+    const {forwardOnly} = this.state;
+    if(forwardOnly)
+      return;
+
     const stepsDataEntries = Object.entries(_stepsData);
     const firstStep = stepsDataEntries[0][1];
 
@@ -378,9 +392,10 @@ export default class Impress extends Component {
 
   // Touch End( decide navigate previous or next Step via 'deltaX' )
   handleTouchEnd(e) {
+    const {forwardOnly} = this.state;
     if (this.state.deltaX > 0) // slide left
       this.next();
-    else if (this.state.deltaX < 0) // slide right
+    else if (this.state.deltaX < 0 && !forwardOnly) // slide right
       this.prev();
 
     // reset
@@ -395,14 +410,14 @@ export default class Impress extends Component {
    * @return {Step} to render children.
    */
   stepComponent(step, index) {
-    const {activeStep} = this.state;
+    const {activeStep, forwardOnly} = this.state;
 
     return React.cloneElement(step, {
       key: index,
       idHelper: step.props.id ? '' : _idHelper++,
       activeStep: activeStep,
       initStep: Impress.initStep.bind(this),
-      goto: this.goto.bind(this),
+      goto: forwardOnly ? null : this.goto.bind(this),
     }, step.props.children);
   }
 
@@ -482,6 +497,11 @@ Impress.propTypes = {
   fallbackMessage: PropTypes.oneOfType([PropTypes.object, PropTypes.string]),
 
   /**
+   * Whether the progress should only go forward
+   */
+  forwardOnly: PropTypes.bool,
+
+  /**
    * Progress of presentation
    */
   progress: PropTypes.bool,
@@ -495,5 +515,6 @@ Impress.defaultProps = {
   fallbackMessage: <p>Your browser <b>doesn't support the features
     required</b> by React-impressJS, so you are presented
     with a simplified version of this presentation.</p>,
+  forwardOnly: false,
   progress: false,
 };
